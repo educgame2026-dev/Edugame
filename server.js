@@ -8,7 +8,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static("public")); // ✅ serve website
 
 const uri = process.env.MONGO_URI;
 
@@ -92,7 +92,7 @@ app.post("/api/user-login", async (req, res) => {
 });
 
 ////////////////////////
-// QUIZ RUN (leaderboard + accuracy)
+// QUIZ RUN
 ////////////////////////
 
 app.post("/api/quiz-run", async (req, res) => {
@@ -154,6 +154,8 @@ app.get("/api/leaderboard", async (req, res) => {
 });
 
 ////////////////////////
+// START SERVER
+////////////////////////
 
 const port = process.env.PORT || 3001;
 
@@ -162,6 +164,3 @@ connectDB().then(() => {
     console.log("Server running on", port);
   });
 });
-
-app.use(express.static("public"));
-app.use(express.json());
