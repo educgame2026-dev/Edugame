@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduGame • Teacher Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap');
+    :root {
+      --bg: #0a0f1c;
+      --card: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #22c55e;
+      --accent2: #38bdf8;
+    }
+    body { margin:0; font-family:'Inter',system-ui,sans-serif; background:linear-gradient(145deg,#0a0f1c,#060912); color:var(--text); }
+    header { padding:18px 5vw; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); }
+    header a { color:var(--text); text-decoration:none; border:1px solid var(--border); padding:10px 14px; border-radius:12px; }
+    main { max-width:1100px; margin:0 auto; padding:24px 5vw 60px; display:grid; gap:18px; }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px; box-shadow:0 16px 50px rgba(0,0,0,0.35); }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+    .metric { padding:12px; border:1px solid var(--border); border-radius:12px; background:rgba(255,255,255,0.02); }
+    ul { list-style:none; padding:0; margin:0; display:grid; gap:8px; }
+    li { padding:10px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.03); }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1 style="margin:0;">Teacher Dashboard</h1>
+      <small style="color:var(--muted);">Monitor class accuracy and top performers</small>
+    </div>
+    <a href="index.html">← Back to Home</a>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Accuracy Overview</h2>
+      <div class="grid">
+        <div class="metric">
+          <strong>Overall</strong>
+          <div id="overallAcc">0%</div>
+          <small id="overallTotals" style="color:var(--muted);"></small>
+        </div>
+        <div class="metric">
+          <strong>Math</strong>
+          <div id="mathAcc">0%</div>
+          <small id="mathTotals" style="color:var(--muted);"></small>
+        </div>
+        <div class="metric">
+          <strong>Science</strong>
+          <div id="scienceAcc">0%</div>
+          <small id="scienceTotals" style="color:var(--muted);"></small>
+        </div>
+        <div class="metric">
+          <strong>English</strong>
+          <div id="englishAcc">0%</div>
+          <small id="englishTotals" style="color:var(--muted);"></small>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Current Leaderboard</h2>
+      <ul id="leaderRows"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Question Bank Counts</h2>
+      <div class="grid">
+        <div class="metric">Math: <span id="mathCount">0</span> questions</div>
+        <div class="metric">Science: <span id="scienceCount">0</span> questions</div>
+        <div class="metric">English: <span id="englishCount">0</span> questions</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = `${location.origin}/api`;
+    const questionCounts = { math: 15, science: 15, english: 15 };
+
+    function percent(c, t) { return t > 0 ? Math.round((c / t) * 100) : 0; }
+
+    function renderAccuracy(acc = {}) {
+      const totals = acc.totals || { correct: 0, total: 0 };
+      const subjects = acc.subjects || {};
+      document.getElementById("overallAcc").innerText = percent(totals.correct, totals.total) + "%";
+      document.getElementById("overallTotals").innerText = `${totals.correct} / ${totals.total}`;
+      ["math", "science", "english"].forEach((s) => {
+        const info = subjects[s] || { correct: 0, total: 0 };
+        document.getElementById(`${s}Acc`).innerText = percent(info.correct, info.total) + "%";
+        document.getElementById(`${s}Totals`).innerText = `${info.correct} / ${info.total}`;
+      });
+    }
+
+    function renderLeaderboard(list = []) {
+      const ul = document.getElementById("leaderRows");
+      ul.innerHTML = list.map((row, i) => `<li>${i + 1}. ${row.name} — ${row.score} (${row.subject})</li>`).join("");
+    }
+
+    function renderCounts() {
+      document.getElementById("mathCount").innerText = questionCounts.math;
+      document.getElementById("scienceCount").innerText = questionCounts.science;
+      document.getElementById("englishCount").innerText = questionCounts.english;
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch(`${API_BASE}/leaderboard`);
+        const data = await res.json();
+        renderAccuracy(data.accuracy || {});
+        renderLeaderboard(data.leaderboard || []);
+      } catch (err) {
+        console.warn("Teacher dashboard load failed", err);
+      }
+      renderCounts();
+    }
+
+    document.addEventListener("DOMContentLoaded", loadData);
+  </script>
+</body>
+</html>

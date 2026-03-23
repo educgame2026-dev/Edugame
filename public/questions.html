@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduGame • Play</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap');
+    :root {
+      --bg: #050814;
+      --card: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --accent: #22c55e;
+      --accent2: #38bdf8;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: radial-gradient(circle at 20% 20%, #0b1224, #050910 50%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 5vw;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      background: rgba(8,12,24,0.7);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header a { color: var(--text); text-decoration: none; border:1px solid var(--border); padding:10px 14px; border-radius:12px; }
+    h1 { margin: 0; font-size: 1.3rem; letter-spacing: .05em; }
+    main { max-width: 920px; margin: 20px auto 80px; padding: 0 5vw; }
+    .panel { background: var(--card); border:1px solid var(--border); border-radius:18px; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+    #question { font-size:1.4rem; margin:16px 0; }
+    .answers { display:grid; gap:10px; }
+    .answers button { padding:14px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.04); color:var(--text); text-align:left; cursor:pointer; transition:.2s; }
+    .answers button:hover { border-color: var(--accent); }
+    .answers button:disabled { opacity:0.5; cursor:not-allowed; text-decoration: line-through; }
+    .correct { background:#22c55e !important; color:#041208; }
+    .wrong { background:#ef4444 !important; }
+    .toolbar { display:flex; gap:10px; margin-top:14px; }
+    .toolbar button { flex:1; border-radius:12px; border:1px solid var(--border); padding:12px; background:rgba(255,255,255,0.05); color:var(--text); cursor:pointer; }
+    .progress { height:8px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,#22c55e,#38bdf8); width:0%; transition:width .3s; }
+    #timer { font-weight:800; color:#facc15; }
+    .meta { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; color:var(--muted); }
+    .pill { padding:6px 10px; border-radius:999px; border:1px solid var(--border); }
+    .hidden { display:none; }
+    .cta { display:inline-block; margin-top:14px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1 id="subjectTitle">EduGame</h1>
+      <small id="progressMeta" style="color:var(--muted);"></small>
+    </div>
+    <a href="index.html">← Back to Home</a>
+  </header>
+
+  <main>
+    <section id="game" class="panel">
+      <div class="meta">
+        <span class="pill">Time: <span id="timer">10</span>s</span>
+        <span class="pill">Coins: <span id="coins">0</span></span>
+      </div>
+      <div class="progress"><div id="progressFill" class="progress-fill"></div></div>
+      <h2 id="question"></h2>
+      <div id="answers" class="answers"></div>
+      <div class="toolbar">
+        <button onclick="useHint()">💡 Hint (-2)</button>
+        <button onclick="removeChoices()">❌ Remove 2 (-3)</button>
+        <button onclick="skipQuestion()">⏭ Skip (-5)</button>
+      </div>
+      <p id="hintText" style="color:var(--muted); margin-top:10px;"></p>
+    </section>
+
+    <section id="result" class="panel hidden">
+      <h2 id="score"></h2>
+      <p id="stats"></p>
+      <a class="cta" href="leaderboard.html">View Live Leaderboard →</a>
+    </section>
+
+    <section id="missing" class="panel hidden">
+      <h2>No subject selected</h2>
+      <p>Choose a subject first.</p>
+      <a class="cta" href="index.html">Go to Home</a>
+    </section>
+  </main>
+
+  <script>
+    // Use same origin for API; works locally and on hosting
+    const API_BASE = `${location.origin}/api`;
+    const params = new URLSearchParams(location.search);
+    let subject = params.get("subject") || localStorage.getItem("selectedSubject");
+let current = 0, score = 0, coins = 10, timer, timeLeft = 10, currentSet = [];
+let gameFinished = false;
+    let accuracyTotals = JSON.parse(localStorage.getItem("edugameUser") || "{}")?.accuracy || {
+      totals:{correct:0,total:0}, subjects:{math:{correct:0,total:0}, science:{correct:0,total:0}, english:{correct:0,total:0}}
+    };
+
+    const questions = {
+      math: [
+        { q: "A student’s problem-solving speed improves by 25%. If the original time to solve a task was 12 minutes, what is the new time?", a: ["6 minutes", "8 minutes", "9 minutes", "10 minutes"], c: 2, hint: "Reduce 12 minutes by a quarter." },
+        { q: "A student uses an educational game 2.5 hours per day for 4 days. How many total hours are spent?", a: ["8 hours", "9 hours", "10 hours", "12 hours"], c: 2, hint: "Multiply daily hours by 4." },
+        { q: "A student’s score increases from 68 to 85 after using math-based games. What is the percentage increase (nearest whole number)?", a: ["20%", "22%", "25%", "30%"], c: 2, hint: "Find the change over the original score." },
+        { q: "In a class of 50 students, 70% who use educational games improved their grades. How many students improved?", a: ["30", "32", "35", "40"], c: 2, hint: "Seventy percent of 50." },
+        { q: "A student’s reaction time decreases from 0.6 s to 0.45 s. What is the percentage decrease?", a: ["15%", "20%", "25%", "30%"], c: 2, hint: "Compare the drop to the original time." },
+        { q: "A student spends 6 hours gaming and 3 hours studying daily. What is the ratio of gaming to studying time in simplest form?", a: ["1:2", "2:1", "3:1", "2:3"], c: 1, hint: "Reduce 6:3." },
+        { q: "A student’s grade drops from 92 to 74. What is the percentage decrease (nearest whole number)?", a: ["15%", "18%", "20%", "22%"], c: 2, hint: "Find the drop divided by 92." },
+        { q: "A student sleeps 5.5 hours instead of the recommended 8 hours. What percentage of the recommended sleep are they getting?", a: ["60%", "65%", "68.75%", "72%"], c: 2, hint: "Divide 5.5 by 8." },
+        { q: "Out of 80 students, 52 say gaming negatively affects their study habits. What fraction represents these students (simplest form)?", a: ["13/20", "3/5", "4/5", "2/3"], c: 0, hint: "Simplify 52/80." },
+        { q: "A student fails to submit 6 out of 24 assignments. What percentage of assignments were missed?", a: ["20%", "25%", "30%", "35%"], c: 1, hint: "6 divided by 24." },
+        { q: "A study shows that as students increase gaming from 2 to 6 hours per day, their average grades drop from 90 to 72. What type of correlation is this?", a: ["Positive correlation", "Negative correlation", "No correlation", "Perfect correlation"], c: 1, hint: "More gaming, lower grades." },
+        { q: "For every additional hour of gaming, a student’s grade decreases by 3 points. If the grade is 95 when gaming 1 hour, what is the grade after 5 hours?", a: ["80", "83", "85", "88"], c: 1, hint: "Four extra hours at -3 points each." },
+        { q: "If gaming time increases by 2 hours and grades drop by 10 points, what is the rate of change per hour?", a: ["-2", "-3", "-5", "-10"], c: 2, hint: "Divide the 10-point drop by 2 hours." },
+        { q: "A graph of gaming time vs grades forms a straight line sloping downward. What does this imply?", a: ["Strong positive relationship", "Weak positive relationship", "Negative linear relationship", "No relationship"], c: 2, hint: "Downward slope meaning." },
+        { q: "If the line of best fit for data is downward sloping, what conclusion can be made?", a: ["Gaming improves grades", "No relationship exists", "More gaming is associated with lower grades", "Grades remain constant"], c: 2, hint: "Interpret a negative slope." }
+      ],
+      science: [
+        { q: "Which part of the brain is mainly responsible for problem-solving skills improved by gaming?", a: ["Cerebellum", "Brainstem", "Prefrontal Cortex", "Medulla"], c: 2, hint: "Front lobe decisions." },
+        { q: "Online gaming can improve hand-eye coordination. Which system is involved?", a: ["Digestive system", "Nervous system", "Respiratory system", "Endocrine system"], c: 1, hint: "Signals and reflexes." },
+        { q: "Strategy games enhance which cognitive skill useful in academics?", a: ["Memory recall", "Critical thinking", "Sleeping habits", "Appetite control"], c: 1, hint: "Evaluating options." },
+        { q: "Multiplayer games improve communication skills through:", a: ["Isolation", "Verbal and non-verbal interaction", "Sleep deprivation", "Physical inactivity"], c: 1, hint: "Talking and coordinating." },
+        { q: "Gaming rewards activate which brain chemical linked to motivation?", a: ["Insulin", "Dopamine", "Hemoglobin", "Melatonin"], c: 1, hint: "Reward neurotransmitter." },
+        { q: "Excessive gaming can lead to lack of sleep. Which hormone is affected?", a: ["Dopamine", "Melatonin", "Adrenaline", "Estrogen"], c: 1, hint: "Sleep hormone drops." },
+        { q: "Too much screen time can cause digital eye strain. Which organ is affected?", a: ["Skin", "Eyes", "Liver", "Kidneys"], c: 1, hint: "Vision issues." },
+        { q: "Gaming addiction can affect attention span. This impacts which academic skill?", a: ["Reading comprehension", "Physical strength", "Taste perception", "Hearing ability"], c: 0, hint: "Understanding texts." },
+        { q: "Sitting for long periods while gaming may lead to:", a: ["Improved posture", "Muscle stiffness", "Faster metabolism", "Better eyesight"], c: 1, hint: "Lack of movement effect." },
+        { q: "Excessive gaming may increase stress levels due to:", a: ["Overproduction of cortisol", "Lack of oxygen", "Increased digestion", "Low heart rate"], c: 0, hint: "Stress hormone spike." },
+        { q: "What happens to study time when gaming time increases too much?", a: ["It increases", "It decreases", "It stays the same", "It doubles"], c: 1, hint: "Tradeoff with study hours." },
+        { q: "Moderate gaming (in balance) may help improve:", a: ["Focus and relaxation", "Laziness", "Memory loss", "Stress only"], c: 0, hint: "Healthy balance benefit." },
+        { q: "Which scientific concept explains the relationship between gaming time and grades?", a: ["Photosynthesis", "Correlation", "Gravity", "Evolution"], c: 1, hint: "Shows how two variables move." },
+        { q: "Too much gaming can reduce study habits due to:", a: ["Better time management", "Distraction and poor scheduling", "Increased energy", "Improved sleep"], c: 1, hint: "Time lost to games." },
+        { q: "What is the best scientific recommendation for gaming and studying?", a: ["Play all day", "Never play games", "Balance time between gaming and studying", "Only study at night"], c: 2, hint: "Moderation approach." }
+      ],
+      english: [
+        { q: "Which sentence shows a positive effect of online gaming on students' academic performance?", a: ["Students lose focus in class", "Gaming improves problem-solving skills", "Students skip assignments", "Gaming causes stress"], c: 1, hint: "Look for the benefit." },
+        { q: "Which English skill is improved when students communicate in multiplayer games?", a: ["Writing only", "Speaking and listening", "Drawing", "Memorizing numbers"], c: 1, hint: "Think conversation." },
+        { q: "Strategy-based games help students improve which academic skill?", a: ["Sleeping habits", "Critical thinking", "Eating habits", "Physical strength"], c: 1, hint: "Analyzing choices." },
+        { q: "Which sentence is grammatically correct?", a: ["Gaming help students learn faster.", "Gaming helps students learn faster.", "Gaming helping students learn faster.", "Gaming helped students learns faster."], c: 1, hint: "Subject-verb agreement." },
+        { q: "Which word best describes a positive “impact”?", a: ["Harm", "Effect", "Problem", "Failure"], c: 1, hint: "Another word for result." },
+        { q: "Excessive gaming can reduce study time. Which English skill is most affected?", a: ["Reading comprehension", "Running", "Drawing", "Singing"], c: 0, hint: "Understanding texts." },
+        { q: "Which sentence shows a negative effect of gaming?", a: ["Students develop better focus", "Students improve communication", "Students become distracted from studies", "Students learn teamwork"], c: 2, hint: "Look for distraction." },
+        { q: "What is the antonym of “positive”?", a: ["Helpful", "Beneficial", "Negative", "Effective"], c: 2, hint: "Opposite meaning." },
+        { q: "Which sentence is correctly punctuated?", a: ["Gaming is fun however it can distract students.", "Gaming is fun; however, it can distract students.", "Gaming is fun however, it can distract students", "Gaming is fun however it can distract students"], c: 1, hint: "Use a semicolon before however." },
+        { q: "Gaming addiction can affect attention span. This leads to:", a: ["Better grades", "Improved focus", "Poor academic performance", "Faster reading"], c: 2, hint: "Outcome of lost focus." },
+        { q: "What happens when students spend too much time gaming?", a: ["Study time increases", "Study time decreases", "Grades always improve", "Nothing changes"], c: 1, hint: "Time tradeoff." },
+        { q: "What does the word “correlate” mean?", a: ["To compete", "To connect or relate", "To ignore", "To separate"], c: 1, hint: "Shows a relationship." },
+        { q: "Moderate gaming can help students:", a: ["Lose focus", "Improve relaxation and focus", "Forget lessons", "Avoid studying"], c: 1, hint: "Benefits of balance." },
+        { q: "Which sentence best shows time correlation?", a: ["Students enjoy games", "More gaming time leads to less study time", "Students like school", "Gaming is fun"], c: 1, hint: "Cause and effect on time." },
+        { q: "Which statement best explains the relationship between time spent on activities and student performance?", a: ["Spending too much time on one activity can affect performance in other areas", "Time has no effect on student performance", "More time always guarantees better results", "Students should only focus on one activity"], c: 0, hint: "Consider balance." }
+      ]
+    };
+
+    function init() {
+      if (!subject || !questions[subject]) {
+        document.getElementById("game").classList.add("hidden");
+        document.getElementById("missing").classList.remove("hidden");
+        return;
+      }
+      document.getElementById("subjectTitle").innerText = subject.charAt(0).toUpperCase() + subject.slice(1) + " Quiz";
+      currentSet = questions[subject];
+      coins = Number(JSON.parse(localStorage.getItem("edugameUser") || "{}")?.coins || 10);
+      document.getElementById("coins").innerText = coins;
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      if (!currentSet[current]) return endGame();
+      const q = currentSet[current];
+      document.getElementById("question").innerText = q.q;
+      const ansDiv = document.getElementById("answers");
+      ansDiv.innerHTML = "";
+      q.a.forEach((ans, i) => {
+        const btn = document.createElement("button");
+        btn.innerText = ans;
+        btn.dataset.index = i;
+        btn.onclick = () => checkAnswer(i);
+        ansDiv.appendChild(btn);
+      });
+      const hintSpan = document.getElementById("hintText");
+      hintSpan.innerText = "Spend 2 coins to reveal a clue.";
+      hintSpan.dataset.questionIdx = current;
+      hintSpan.dataset.revealed = "false";
+      updateProgress();
+      startTimer();
+      document.getElementById("progressMeta").innerText = `Question ${current + 1} of ${currentSet.length}`;
+    }
+
+    function checkAnswer(i) {
+      const buttons = document.querySelectorAll("#answers button");
+      buttons.forEach((btn) => (btn.disabled = true));
+      const correctIndex = currentSet[current].c;
+      if (i === correctIndex) {
+        buttons[i].classList.add("correct");
+        score++;
+      } else {
+        buttons[i].classList.add("wrong");
+        buttons[correctIndex].classList.add("correct");
+      }
+      setTimeout(nextQuestion, 700);
+    }
+
+    function nextQuestion() {
+
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+      current++;
+      if (current >= currentSet.length) {
+        endGame();
+      } else {
+        loadQuestion();
+      }
+    }
+
+    function updateProgress() {
+      const pct = (current / currentSet.length) * 100;
+      document.getElementById("progressFill").style.width = pct + "%";
+    }
+
+    function endGame() {
+
+  if (gameFinished) return;
+  gameFinished = true;
+
+  clearInterval(timer);
+
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("result").classList.remove("hidden");
+
+  const percent = Math.round((score / currentSet.length) * 100);
+
+  document.getElementById("score").innerText =
+    `You scored ${score}/${currentSet.length}`;
+
+  document.getElementById("stats").innerText =
+    `Accuracy ${percent}% — redirecting to leaderboard...`;
+
+  updateAccuracyTotals();
+  recordRun();
+
+  setTimeout(() => {
+    window.location.href = "leaderboard.html";
+  }, 1200);
+}
+
+    function updateAccuracyTotals() {
+      if (!accuracyTotals.subjects[subject]) accuracyTotals.subjects[subject] = { correct: 0, total: 0 };
+      accuracyTotals.subjects[subject].correct += score;
+      accuracyTotals.subjects[subject].total += currentSet.length;
+      accuracyTotals.totals.correct += score;
+      accuracyTotals.totals.total += currentSet.length;
+      const stored = JSON.parse(localStorage.getItem("edugameUser") || "{}");
+      localStorage.setItem("edugameUser", JSON.stringify({ ...stored, coins, accuracy: accuracyTotals }));
+    }
+
+   function startTimer() {
+
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+
+  timeLeft = 10;
+  document.getElementById("timer").innerText = timeLeft;
+
+  timer = setInterval(() => {
+
+    timeLeft--;
+
+    document.getElementById("timer").innerText = timeLeft;
+
+    if (timeLeft <= 0) {
+
+      clearInterval(timer);
+      timer = null;
+
+      nextQuestion();
+    }
+
+  }, 1000);
+
+}
+    function adjustCoins(delta) {
+      coins += delta;
+      if (coins < 0) coins = 0;
+      document.getElementById("coins").innerText = coins;
+      const stored = JSON.parse(localStorage.getItem("edugameUser") || "{}");
+      localStorage.setItem("edugameUser", JSON.stringify({ ...stored, coins }));
+    }
+
+    function useHint() {
+      const hintSpan = document.getElementById("hintText");
+      const currentIndex = Number(hintSpan.dataset.questionIdx);
+      if (coins < 2) {
+        alert("You need 2 coins for a hint.");
+        return;
+      }
+      if (currentIndex === current && hintSpan.dataset.revealed === "true") {
+        alert("Hint already shown.");
+        return;
+      }
+      adjustCoins(-2);
+      hintSpan.innerText = currentSet[current]?.hint || "Think it through.";
+      hintSpan.dataset.revealed = "true";
+      hintSpan.dataset.questionIdx = current;
+    }
+
+    function removeChoices() {
+      const buttons = Array.from(document.querySelectorAll("#answers button"));
+      if (buttons.every((b) => b.disabled)) return alert("This question is locked.");
+      if (coins < 3) return alert("Need 3 coins to remove choices.");
+      const incorrect = buttons.filter((btn) => Number(btn.dataset.index) !== currentSet[current].c && !btn.disabled);
+      if (!incorrect.length) return alert("No distractors left.");
+      adjustCoins(-3);
+      incorrect.slice(0, 2).forEach((btn) => (btn.disabled = true));
+    }
+
+    function skipQuestion() {
+      if (coins < 5) return alert("Need 5 coins to skip.");
+      adjustCoins(-5);
+      nextQuestion();
+    }
+
+    async function recordRun() {
+      try {
+        await fetch(`${API_BASE}/quiz-run`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: localStorage.getItem("edugameUserName") || "Scholar", subject, correct: score, total: currentSet.length })
+        });
+      } catch (err) {
+        console.warn("Could not sync run", err);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>

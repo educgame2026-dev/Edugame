@@ -1,0 +1,15 @@
+{
+  "name": "edugame-admin",
+  "version": "1.0.0",
+  "description": "Admin API for EduGame",
+  "main": "admin-server.js",
+  "scripts": {
+    "start": "node admin-server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^4.22.1",
+    "mongodb": "^7.1.0"
+  }
+}

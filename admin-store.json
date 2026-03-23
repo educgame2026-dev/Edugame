@@ -1,0 +1,31 @@
+{
+  "admin": {
+    "username": "eduAdmin",
+    "password": "admin123"
+  },
+  "currentUser": null,
+  "settings": {
+    "sound": true,
+    "notifications": true
+  },
+  "profile": {
+    "name": "",
+    "streak": 0,
+    "lastPlayed": null
+  },
+  "users": [],
+  "bestScores": {
+    "math": 0,
+    "science": 0,
+    "english": 0
+  },
+  "accuracy": {
+    "totals": { "correct": 0, "total": 0 },
+    "subjects": {
+      "math": { "correct": 0, "total": 0 },
+      "science": { "correct": 0, "total": 0 },
+      "english": { "correct": 0, "total": 0 }
+    }
+  },
+  "leaderboard": []
+}

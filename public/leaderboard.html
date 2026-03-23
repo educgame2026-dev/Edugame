@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduGame Leaderboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
+    :root {
+      --bg: #030712;
+      --card: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --accent: #22c55e;
+      --accent2: #38bdf8;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+    }
+    body {
+      margin: 0;
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background: radial-gradient(circle at 20% 20%, #0b1224, #050910 45%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 20px 5vw;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8,12,24,0.7);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      letter-spacing: 0.04em;
+    }
+    header a {
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      padding: 10px 16px;
+      border-radius: 12px;
+    }
+    main {
+      padding: 28px 5vw 60px;
+      max-width: 1100px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      gap: 20px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
+      gap: 12px;
+    }
+    .leader-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .leader-row.me {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(34,197,94,0.4);
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .accent {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>EduGame Live Leaderboard</h1>
+      <div class="pill">Updates every 10s • powered by local API</div>
+    </div>
+    <a href="index.html">← Back to Play</a>
+  </header>
+  <main>
+    <section class="card">
+      <h2>Overall Accuracy</h2>
+      <div class="grid">
+        <div class="card">
+          <div class="pill">All Subjects</div>
+          <h3 id="overallAcc">0%</h3>
+          <small id="overallTotals"></small>
+        </div>
+        <div class="card">
+          <div class="pill">Math</div>
+          <h3 id="mathAcc">0%</h3>
+          <small id="mathTotals"></small>
+        </div>
+        <div class="card">
+          <div class="pill">Science</div>
+          <h3 id="scienceAcc">0%</h3>
+          <small id="scienceTotals"></small>
+        </div>
+        <div class="card">
+          <div class="pill">English</div>
+          <h3 id="englishAcc">0%</h3>
+          <small id="englishTotals"></small>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Top Learners</h2>
+      <div id="leaderboardRows"></div>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = `${location.origin}/api`;
+    const savedUser = JSON.parse(localStorage.getItem("edugame_user") || "{}");
+    const currentUser = savedUser.name || savedUser.email || "Player";
+
+    function percent(c, t) {
+      return t > 0 ? Math.round((c / t) * 100) : 0;
+    }
+
+    function renderAccuracy(accuracy) {
+      const subjects = accuracy?.subjects || {};
+      const totals = accuracy?.totals || { correct: 0, total: 0 };
+
+      document.getElementById("overallAcc").innerText = percent(totals.correct, totals.total) + "%";
+      document.getElementById("overallTotals").innerText = `${totals.correct} correct of ${totals.total}`;
+
+      ["math", "science", "english"].forEach((subj) => {
+        const info = subjects[subj] || { correct: 0, total: 0 };
+        document.getElementById(`${subj}Acc`).innerText = percent(info.correct, info.total) + "%";
+        document.getElementById(`${subj}Totals`).innerText = `${info.correct} / ${info.total}`;
+      });
+    }
+
+    function renderLeaderboard(leaderboard = []) {
+      const holder = document.getElementById("leaderboardRows");
+      holder.innerHTML = "";
+      if (!leaderboard.length) {
+        holder.innerHTML = '<div class="leader-row"><span>No scores yet — play a game to appear here.</span></div>';
+        return;
+      }
+      leaderboard.forEach((entry, idx) => {
+        const row = document.createElement("div");
+        row.className = `leader-row${entry.name === currentUser ? " me" : ""}`;
+        row.innerHTML = `<span>${idx + 1}. ${entry.name} · <span class="accent">${entry.subject}</span></span><strong>${entry.score}</strong>`;
+        holder.appendChild(row);
+      });
+    }
+
+    async function pullLeaderboard() {
+      try {
+        const res = await fetch(`${API_BASE}/leaderboard`);
+        const data = await res.json();
+        renderLeaderboard(data.leaderboard || []);
+        renderAccuracy(data.accuracy || {});
+      } catch (err) {
+        console.warn("Unable to load leaderboard", err);
+      }
+    }
+
+    pullLeaderboard();
+    setInterval(pullLeaderboard, 10000);
+  </script>
+</body>
+</html>

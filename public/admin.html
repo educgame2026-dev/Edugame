@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EduGame Admin</title>
+    <style>
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        background: #050b18;
+        color: #f8fafc;
+        margin: 0;
+        min-height: 100vh;
+      }
+      header {
+        padding: 20px 5vw;
+        background: linear-gradient(120deg, #111827, #1f2937);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+      }
+      header p {
+        margin-top: 6px;
+        color: #94a3b8;
+      }
+      main {
+        padding: 30px 5vw;
+        max-width: 1100px;
+        margin: 0 auto;
+        display: grid;
+        gap: 24px;
+      }
+      .panel {
+        background: #0f172a;
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .panel h2 {
+        margin-top: 0;
+      }
+      .panel small {
+        color: #94a3b8;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+      .metric {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .metric:last-child {
+        border-bottom: none;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      .controls {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+      .primary-btn {
+        background: #22d3ee;
+        color: #012a33;
+        border: none;
+        border-radius: 12px;
+        padding: 10px 18px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .ghost-btn {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        padding: 10px 18px;
+        color: #e2e8f0;
+        cursor: pointer;
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+      }
+      input,
+      select {
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 10px 12px;
+        color: white;
+      }
+      .feedback {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        color: #22d3ee;
+      }
+      .leaderboard-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .leaderboard-row.you {
+        border-color: rgba(16, 185, 129, 0.5);
+        box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4);
+        background: rgba(16, 185, 129, 0.08);
+      }
+      .status-pill {
+        display: inline-flex;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.2);
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        font-size: 0.8rem;
+      }
+      .admin-login-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(5, 11, 24, 0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+      }
+      .admin-login-card {
+        background: #0b1120;
+        border-radius: 18px;
+        padding: 28px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        width: min(360px, 90%);
+      }
+      .admin-login-card h3 {
+        margin-top: 0;
+        font-size: 1.2rem;
+        letter-spacing: 0.1rem;
+        text-transform: uppercase;
+      }
+      .admin-login-card form {
+        display: grid;
+        gap: 12px;
+        margin-top: 16px;
+      }
+      .admin-login-card input {
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+      }
+      .admin-login-card button {
+        border-radius: 12px;
+      }
+      .admin-login-message {
+        margin-top: 12px;
+        font-size: 0.9rem;
+        color: #a5f3fc;
+      }
+      main.locked {
+        filter: blur(1.5px);
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="adminLoginOverlay" class="admin-login-overlay">
+      <div class="admin-login-card">
+        <h3>Admin Login</h3>
+        <form id="adminLoginForm">
+          <input type="text" id="adminLoginUsername" placeholder="Username" required />
+          <input type="password" id="adminLoginPassword" placeholder="Password" required />
+          <button type="submit" class="primary-btn">Unlock Panel</button>
+        </form>
+        <p id="adminLoginMessage" class="admin-login-message">Use eduAdmin/admin123.</p>
+      </div>
+    </div>
+    <header>
+      <h1>EduGame Admin</h1>
+      <p>Manage settings, profile, best scores, and leaderboard entries.</p>
+    </header>
+    <main id="adminMain" class="locked">
+      <section class="panel">
+        <h2>Session Health</h2>
+        <div class="grid" id="sessionMetrics"></div>
+        <div class="controls">
+          <button class="primary-btn" onclick="refreshSession()">Reload from API</button>
+          <button class="ghost-btn" onclick="resetLeaderboard()">Reset Top Entries</button>
+        </div>
+        <div class="feedback" id="adminFeedback"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Settings</h2>
+        <div class="metric">
+          <span>Sound effects</span>
+          <button class="primary-btn" id="soundSettingBtn" onclick="updateSettings({ sound: !currentSettings.sound })"></button>
+        </div>
+        <div class="metric">
+          <span>Notifications</span>
+          <button class="primary-btn" id="notificationsSettingBtn" onclick="updateSettings({ notifications: !currentSettings.notifications })"></button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Profile</h2>
+        <div class="metric">
+          <span>Player name</span>
+          <strong id="profileName"></strong>
+        </div>
+        <div class="metric">
+          <span>Streak</span>
+          <strong id="profileStreak"></strong>
+        </div>
+        <div class="metric">
+          <span>Last played</span>
+          <strong id="profileLastPlayed"></strong>
+        </div>
+        <form class="form-row" onsubmit="event.preventDefault(); saveProfile();">
+          <input type="text" id="adminName" placeholder="Set name" required />
+          <input type="number" id="adminStreak" min="0" placeholder="Reset streak" />
+          <button class="primary-btn" type="submit">Update Profile</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>Best Scores</h2>
+        <form class="form-row" onsubmit="event.preventDefault(); submitBestScore();">
+          <select id="subjectSelect" required>
+            <option value="">Choose subject</option>
+            <option value="math">Math</option>
+            <option value="science">Science</option>
+            <option value="english">English</option>
+          </select>
+          <input type="number" id="scoreInput" min="0" placeholder="Score" required />
+          <button class="primary-btn" type="submit">Save</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>Leaderboard</h2>
+        <div id="leaderboardRows"></div>
+        <form class="form-row" onsubmit="event.preventDefault(); addLeaderboardEntry();">
+          <input type="text" id="entryName" placeholder="Player name" required />
+          <input type="number" id="entryScore" min="0" placeholder="Score" required />
+          <select id="entrySubject">
+            <option value="Math">Math</option>
+            <option value="Science">Science</option>
+            <option value="English">English</option>
+          </select>
+          <button class="primary-btn" type="submit">Insert Entry</button>
+        </form>
+      </section>
+    </main>
+
+    <script>
+      const API_BASE = `${location.origin}/api`;
+      let currentSettings = {};
+      let currentProfile = {};
+      let currentLeaderboard = [];
+      let currentAccuracy = {};
+      let adminAuthenticated = false;
+
+      async function refreshSession() {
+        try {
+          const res = await fetch(`${API_BASE}/session`);
+          const data = await res.json();
+          currentSettings = data.settings;
+          currentProfile = data.profile;
+          currentLeaderboard = data.leaderboard;
+          currentAccuracy = data.accuracy || {};
+          updateMetrics(data);
+          renderLeaderboard();
+          updateSettingsButtons();
+          updateProfileCard();
+          setFeedback("Session refreshed.");
+        } catch (err) {
+          setFeedback("Unable to load session.");
+        }
+      }
+
+      function updateMetrics(data) {
+        const container = document.getElementById("sessionMetrics");
+        container.innerHTML = "";
+        const metrics = [
+          { label: "Sound", value: data.settings.sound ? "Enabled" : "Muted" },
+          { label: "Notifications", value: data.settings.notifications ? "Enabled" : "Off" },
+          { label: "Streak", value: data.profile.streak },
+          {
+            label: "Last played",
+            value: data.profile.lastPlayed ? new Date(data.profile.lastPlayed).toLocaleString() : "Never"
+          },
+          { label: "Leaderboard rows", value: data.leaderboard.length },
+          {
+            label: "Overall accuracy",
+            value: data.accuracy?.totals?.total
+              ? `${Math.round((data.accuracy.totals.correct / data.accuracy.totals.total) * 100)}%`
+              : "0%"
+          }
+        ];
+        metrics.forEach((metric) => {
+          const row = document.createElement("div");
+          row.className = "metric";
+          row.innerHTML = `<span>${metric.label}</span><strong>${metric.value}</strong>`;
+          container.appendChild(row);
+        });
+      }
+
+      function updateSettingsButtons() {
+        document.getElementById("soundSettingBtn").innerText = currentSettings.sound ? "Turn sound off" : "Enable sound";
+        document.getElementById("notificationsSettingBtn").innerText = currentSettings.notifications
+          ? "Disable notifications"
+          : "Enable notifications";
+      }
+
+      function updateProfileCard() {
+        document.getElementById("profileName").innerText = currentProfile.name;
+        document.getElementById("profileStreak").innerText = currentProfile.streak;
+        document.getElementById("profileLastPlayed").innerText = currentProfile.lastPlayed
+          ? new Date(currentProfile.lastPlayed).toLocaleString()
+          : "Never";
+      }
+
+      async function updateSettings(payload) {
+        try {
+          const res = await fetch(`${API_BASE}/settings`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          currentSettings = await res.json();
+          updateSettingsButtons();
+          setFeedback("Settings saved.");
+        } catch (err) {
+          setFeedback("Unable to update settings.");
+        }
+      }
+
+      async function submitBestScore() {
+        const subject = document.getElementById("subjectSelect").value;
+        const score = Number(document.getElementById("scoreInput").value);
+        if (!subject) {
+          setFeedback("Pick a subject.");
+          return;
+        }
+        try {
+          await fetch(`${API_BASE}/best-score`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ subject, score, streak: Number(document.getElementById("adminStreak").value) || currentProfile.streak })
+          });
+          setFeedback(`Best score for ${subject} updated to ${score}.`);
+          refreshSession();
+        } catch (err) {
+          setFeedback("Unable to save best score.");
+        }
+      }
+
+      async function saveProfile() {
+        const name = document.getElementById("adminName").value.trim();
+        const streakVal = document.getElementById("adminStreak").value;
+        const payload = {};
+        if (name) payload.name = name;
+        if (streakVal) payload.streak = Number(streakVal);
+        try {
+          await fetch(`${API_BASE}/profile`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          setFeedback("Profile updated.");
+          refreshSession();
+        } catch (err) {
+          setFeedback("Unable to update profile.");
+        }
+      }
+
+      async function addLeaderboardEntry() {
+        const name = document.getElementById("entryName").value.trim();
+        const score = Number(document.getElementById("entryScore").value);
+        const subject = document.getElementById("entrySubject").value;
+        if (!name || !score) {
+          setFeedback("Name and score are required.");
+          return;
+        }
+        try {
+          await fetch(`${API_BASE}/leaderboard`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, score, subject })
+          });
+          setFeedback("Leaderboard entry recorded.");
+          refreshSession();
+        } catch (err) {
+          setFeedback("Unable to update leaderboard.");
+        }
+      }
+
+      function renderLeaderboard() {
+        const holder = document.getElementById("leaderboardRows");
+        holder.innerHTML = "";
+        currentLeaderboard.forEach((entry, idx) => {
+          const row = document.createElement("div");
+          row.className = `leaderboard-row${entry.name === currentProfile.name ? " you" : ""}`;
+          row.innerHTML = `<span>${idx + 1}. ${entry.name} (${entry.subject})</span><strong>${entry.score}</strong>`;
+          holder.appendChild(row);
+        });
+      }
+
+      async function resetLeaderboard() {
+        try {
+          await fetch(`${API_BASE}/leaderboard`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: "System", score: 0, subject: "Reset" })
+          });
+          setFeedback("Leaderboard reset placeholder added.");
+          refreshSession();
+        } catch (err) {
+          setFeedback("Unable to reset leaderboard.");
+        }
+      }
+
+      function setFeedback(message) {
+        document.getElementById("adminFeedback").innerText = message;
+        setTimeout(() => {
+          document.getElementById("adminFeedback").innerText = "";
+        }, 4000);
+      }
+
+      function lockMain() {
+        document.getElementById("adminMain").classList.add("locked");
+      }
+
+      function unlockMain() {
+        document.getElementById("adminMain").classList.remove("locked");
+      }
+
+      function setAdminLoginMessage(message, isError = false) {
+        const msg = document.getElementById("adminLoginMessage");
+        msg.innerText = message;
+        msg.style.color = isError ? "#f87171" : "#a5f3fc";
+      }
+
+      async function handleAdminLogin(event) {
+        event.preventDefault();
+        const username = document.getElementById("adminLoginUsername").value.trim();
+        const password = document.getElementById("adminLoginPassword").value.trim();
+        if (!username || !password) {
+          setAdminLoginMessage("Username and password are required.", true);
+          return;
+        }
+        try {
+          const res = await fetch(`${API_BASE}/admin-login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+          });
+          if (res.ok) {
+            adminAuthenticated = true;
+            unlockMain();
+            document.getElementById("adminLoginOverlay").classList.add("hidden");
+            setAdminLoginMessage("Welcome back.", false);
+            refreshSession();
+          } else {
+            const body = await res.json();
+            setAdminLoginMessage(body.error || "Invalid credentials.", true);
+          }
+        } catch (err) {
+          setAdminLoginMessage("Unable to reach server.", true);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("adminLoginForm").addEventListener("submit", handleAdminLogin);
+        lockMain();
+        setAdminLoginMessage("Use eduAdmin/admin123.", false);
+      });
+
+      refreshSession();
+    </script>
+  </body>
+</html>

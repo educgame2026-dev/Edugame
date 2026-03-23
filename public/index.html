@@ -1,0 +1,1308 @@
+﻿﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EduGame - Professional Learning Platform</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+    :root {
+      --bg: #0f0f1a;
+      --glass: rgba(255,255,255,0.05);
+      --glass-strong: rgba(255,255,255,0.08);
+      --accent: #8b5cf6;
+      --accent2: #3b82f6;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: rgba(255,255,255,0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at top, #0f172a, #020617);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 5vw;
+      backdrop-filter: blur(14px);
+      background: rgba(17,24,39,0.8);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--success), #06b6d4);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .logo p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .top-stats {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .xp-wrapper {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.75rem;
+      color: #facc15;
+      text-align: right;
+    }
+
+    .coins-box {
+      background: rgba(255,255,255,0.05);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* CONTAINER */
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 30px 5vw;
+      min-height: calc(100vh - 120px);
+    }
+
+    /* PANELS */
+    .panel {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(18px);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      transition: all 0.3s ease;
+    }
+
+    .panel:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 25px 70px rgba(0,0,0,0.7);
+    }
+
+    /* GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    /* BUTTONS */
+    .primary-btn, .secondary-btn {
+      padding: 14px 24px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+      box-shadow: 0 10px 25px rgba(139,92,246,0.4);
+    }
+
+    .primary-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 15px 35px rgba(139,92,246,0.5);
+    }
+
+    .secondary-btn {
+      background: var(--glass-strong);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .secondary-btn:hover {
+      background: rgba(255,255,255,0.12);
+      transform: translateY(-1px);
+    }
+
+    /* CARDS */
+    .card {
+      background: rgba(255,255,255,0.03);
+      border-radius: 16px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    /* DASHBOARD LAYOUT */
+    .dashboard {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
+      height: calc(100vh - 200px);
+    }
+
+    .sidebar {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      height: fit-content;
+      position: sticky;
+      top: 100px;
+    }
+
+    .sidebar h3 {
+      margin-top: 0;
+      color: var(--text);
+    }
+
+    .sidebar button {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      overflow-y: auto;
+    }
+
+    /* MENU PANELS */
+    .menu-panel {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .menu-panel.active {
+      display: block;
+    }
+
+    /* PROGRESS & XP */
+    .xp-bar {
+      height: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 12px 0;
+    }
+
+    #xpFill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #facc15, var(--success));
+      transition: width 0.4s ease;
+    }
+
+    .level-info {
+      font-size: 0.9rem;
+      color: #facc15;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    /* LOGIN OVERLAY */
+    .login-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backdrop-filter: blur(10px);
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .login-card {
+      background: rgba(17,24,39,0.95);
+      border-radius: 20px;
+      padding: 40px;
+      border: 1px solid var(--border);
+      box-shadow: 0 25px 70px rgba(0,0,0,0.8);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-card h2 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .login-card input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      padding: 14px;
+      border-radius: 10px;
+      color: white;
+      margin-bottom: 16px;
+      font-size: 1rem;
+    }
+
+    .login-card input::placeholder {
+      color: var(--muted);
+    }
+
+    .login-message {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 0.9rem;
+    }
+
+    /* GAME SCREEN */
+    #game {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    #question {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin: 24px 0;
+      line-height: 1.4;
+    }
+
+    .meta {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+    }
+
+    .pill {
+      background: rgba(255,255,255,0.08);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    #timer {
+      font-weight: 800;
+      color: #facc15;
+      font-size: 1.1rem;
+    }
+
+    .progress {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.1);
+      overflow: hidden;
+      margin: 20px 0;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, var(--success), #06b6d4);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .answers {
+      display: grid;
+      gap: 12px;
+      margin: 24px 0;
+    }
+
+    .answers button {
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      text-align: left;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .answers button:hover:not(:disabled) {
+      background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(59,130,246,0.2));
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .answers button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .correct {
+      background: var(--success) !important;
+      border-color: var(--success) !important;
+      transform: scale(1.02);
+    }
+
+    .wrong {
+      background: var(--danger) !important;
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .hint-box {
+      margin-top: 16px;
+      padding: 12px;
+      border: 1px dashed var(--border);
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    /* RESULT SCREEN */
+    #result .panel {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    #result h2 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--success), #06b6d4);
+      -webkit-background-clip: text;
+      color: transparent;
+      margin-bottom: 12px;
+    }
+
+    /* LEADERBOARD */
+    .leaderboard-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.04);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .leaderboard-entry.you {
+      border: 2px solid var(--accent);
+      background: rgba(139,92,246,0.15);
+    }
+
+    .rank {
+      font-weight: 800;
+      font-size: 1.2rem;
+      min-width: 40px;
+    }
+
+    /* DASHBOARDS */
+    .stats-grid {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .teacher-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    /* HIDDEN CLASS */
+    .hidden {
+      display: none !important;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel, .card {
+      animation: fadeIn 0.4s ease;
+    }
+
+    /* LEVEL UP */
+    .level-up {
+      position: fixed;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, var(--success), #16a34a);
+      padding: 24px 48px;
+      border-radius: 20px;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: white;
+      box-shadow: 0 20px 60px rgba(34,197,94,0.4);
+      z-index: 1000;
+      animation: pop 0.6s ease;
+    }
+
+    @keyframes pop {
+      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      
+      .topbar {
+        flex-direction: column;
+        gap: 16px;
+        padding: 20px;
+      }
+      
+      .top-stats {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.2);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGIN OVERLAY -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+      <h2>🎓 Welcome to EduGame</h2>
+      <p style="text-align: center; color: var(--muted); margin-bottom: 24px;">
+        Enter with your email to keep scores live.
+      </p>
+      <form id="loginForm">
+        <input type="email" id="loginEmail" placeholder="Email address" autocomplete="email" required />
+        <input type="password" id="loginPassword" placeholder="Password (min 6 characters)" autocomplete="current-password" required />
+        <button type="submit" class="primary-btn" style="width: 100%;">Enter EduGame</button>
+      </form>
+      <p id="loginMessage" class="login-message">Use your email and password. First login creates your account.</p>
+      <p style="text-align: center; font-size: 0.8rem; color: var(--muted); margin-top: 16px;">
+        Secure login required for leaderboard and progress.
+      </p>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="topbar" id="topbar" style="display: none;">
+    <div class="logo">
+      <h1>EduGame</h1>
+      <p>Smart Learning Platform</p>
+    </div>
+    <div class="top-stats">
+      <div class="xp-wrapper">
+        <div>Lvl <span id="level">1</span></div>
+        <div class="xp-bar">
+          <div id="xpFill"></div>
+        </div>
+        <div>XP: <span id="xp">0</span>/100</div>
+      </div>
+      <div class="coins-box">
+        🪙 <span id="coins">10</span>
+      </div>
+      <button class="secondary-btn" onclick="showView('leaderboardPage')">🏆 Leaderboard</button>
+      <button class="secondary-btn" onclick="logoutUser()">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- HOME DASHBOARD -->
+    <div id="home" class="dashboard hidden">
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+        <h3>📋 Navigation</h3>
+        <button class="secondary-btn" onclick="showMenuSection('subjectsPanel')">📚 Subjects</button>
+        <button class="secondary-btn" onclick="showMenuSection('profilePanel')">👤 Profile</button>
+        <button class="secondary-btn" onclick="showMenuSection('settingsPanel')">⚙️ Settings</button>
+        <button class="secondary-btn" onclick="showView('leaderboardPage')">🏆 Leaderboard</button>
+
+        <!-- SUBJECTS PANEL -->
+        <div id="subjectsPanel" class="menu-panel">
+          <h4>Quick Start</h4>
+          <button class="primary-btn" onclick="startGame('math')" style="margin-bottom: 8px;">📘 Mathematics</button>
+          <button class="primary-btn" onclick="startGame('science')" style="margin-bottom: 8px;">🔬 Science</button>
+          <button class="primary-btn" onclick="startGame('english')">📖 English</button>
+        </div>
+
+        <!-- PROFILE PANEL -->
+        <div id="profilePanel" class="menu-panel">
+          <h4>Player Stats</h4>
+          <p><strong>Name:</strong> <span id="profileName">Guest</span></p>
+          <p><strong>Level:</strong> <span id="profileLevel">1</span></p>
+          <p><strong>Coins:</strong> <span id="profileCoins">10</span></p>
+                    <p><strong>Streak:</strong> <span id="profileStreak">0</span></p>
+          <p><strong>Total XP:</strong> <span id="profileXP">0</span></p>
+        </div>
+
+        <!-- SETTINGS PANEL -->
+        <div id="settingsPanel" class="menu-panel">
+          <h4>Settings</h4>
+          <p>Sound: 
+            <button class="secondary-btn" onclick="toggleSound()" id="soundBtn" style="width: auto; padding: 4px 12px; font-size: 0.8rem;">
+              On
+            </button>
+          </p>
+          <p>Music: 
+            <button class="secondary-btn" onclick="toggleMusic()" id="musicBtn" style="width: auto; padding: 4px 12px; font-size: 0.8rem;">
+              On
+            </button>
+          </p>
+        </div>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div class="main-content">
+        <div class="panel">
+          <h2>🎯 Quick Stats</h2>
+          <div class="grid stats-grid">
+            <div class="card">
+              <div style="font-size: 2rem; color: var(--success);">🔥 <span id="streakCount">0</span></div>
+              <div>Current Streak</div>
+            </div>
+            <div class="card">
+              <div style="font-size: 2rem; color: #facc15;"><span id="bestScore">0</span>%</div>
+              <div>Best Score</div>
+            </div>
+            <div class="card">
+              <div style="font-size: 2rem; color: var(--accent);">🪙 <span id="totalCoins">10</span></div>
+              <div>Total Coins</div>
+            </div>
+            <div class="card">
+              <div style="font-size: 2rem; color: var(--accent2);"><span id="accuracy">0</span>%</div>
+              <div>Accuracy</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>📊 Dashboards</h2>
+          <div class="grid">
+            <button class="secondary-btn" onclick="showView('teacherPage')">
+              👩‍🏫 Teacher Dashboard
+            </button>
+            <button class="secondary-btn" onclick="showView('studentPage')">
+              📈 Student Progress
+            </button>
+            <button class="secondary-btn" onclick="showView('leaderboardPage')">
+              🏆 Leaderboard
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game" class="hidden">
+      <div class="panel" style="max-width: 900px; margin: 0 auto;">
+        <div class="meta">
+          <span class="pill">📚 <span id="subjectLabel">Math</span></span>
+          <span class="pill">⏱️ <span id="timer">10</span>s</span>
+          <span class="pill">Q<span id="counter">1</span> / <span id="totalQuestions">15</span></span>
+        </div>
+        
+        <div class="progress">
+          <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+        </div>
+
+        <h2 id="question">Loading question...</h2>
+
+        <div id="answers" class="answers"></div>
+
+        <div class="toolbar">
+          <button class="secondary-btn" onclick="useHint()" id="hintBtn">💡 Hint (2🪙)</button>
+          <button class="secondary-btn" onclick="removeChoices()" id="removeBtn">❌ Remove 2 (3🪙)</button>
+          <button class="secondary-btn" onclick="skipQuestion()" id="skipBtn">⏭ Skip (5🪙)</button>
+        </div>
+
+        <div id="hintText" class="hint-box"></div>
+      </div>
+    </div>
+
+    <!-- RESULTS SCREEN -->
+    <div id="result" class="hidden">
+      <div class="panel">
+        <h2 id="finalScore">Score: 0/15</h2>
+        <p id="finalStats" style="font-size: 1.2rem; margin: 12px 0;"></p>
+        <div class="grid" style="max-width: 500px; margin: 0 auto;">
+          <div class="card">
+            <div style="font-size: 1.5rem;">📊 <span id="resultAccuracy">0</span>%</div>
+            <p>Accuracy</p>
+          </div>
+          <div class="card">
+            <div style="font-size: 1.5rem;">🪙 <span id="earnedCoins">0</span></div>
+            <p>Coins Earned</p>
+          </div>
+          <div class="card">
+            <div style="font-size: 1.5rem;">⭐ <span id="earnedXP">0</span></div>
+            <p>XP Gained</p>
+          </div>
+        </div>
+        <div style="margin-top: 32px;">
+          <button class="primary-btn" onclick="restartGame()" style="margin-right: 12px;">🔄 Play Again</button>
+          <button class="secondary-btn" onclick="goHome()">🏠 Home</button>
+          <button class="secondary-btn" onclick="showView('leaderboardPage')">🏆 Leaderboard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDENT DASHBOARD -->
+    <div id="studentPage" class="hidden">
+      <div class="panel">
+        <h2>📈 Student Progress</h2>
+        <div class="teacher-stats">
+          <div class="card">
+            <div style="font-size: 2rem; color: var(--success);">📘 <span id="studentMath">0</span>%</div>
+            <div>Mathematics</div>
+          </div>
+          <div class="card">
+            <div style="font-size: 2rem; color: #06b6d4;">🔬 <span id="studentScience">0</span>%</div>
+            <div>Science</div>
+          </div>
+          <div class="card">
+            <div style="font-size: 2rem; color: var(--accent);">📖 <span id="studentEnglish">0</span>%</div>
+            <div>English</div>
+          </div>
+          <div class="card">
+            <div style="font-size: 2rem; color: #facc15;">📊 <span id="studentOverall">0</span>%</div>
+            <div>Overall</div>
+          </div>
+        </div>
+        <h3 style="margin-top: 32px;">Recent Performance</h3>
+        <ul id="recentPerformance" style="max-height: 300px; overflow-y: auto;"></ul>
+      </div>
+    </div>
+
+    <!-- TEACHER DASHBOARD -->
+    <div id="teacherPage" class="hidden">
+      <div class="panel">
+        <h2>👩‍🏫 Teacher Dashboard</h2>
+        <p style="color: var(--muted); margin-bottom: 24px;">
+          Class analytics and student performance overview
+        </p>
+        <div class="teacher-stats">
+          <div class="card">
+            <div style="font-size: 2.5rem; color: var(--success);">📊 <span id="teachOverall">95</span>%</div>
+            <div>Class Average</div>
+            <small id="teachOverallTotal">247/260</small>
+          </div>
+          <div class="card">
+            <div style="font-size: 2rem;">📘 Math: <span id="teachMath">92</span>%</div>
+            <small>127/138</small>
+          </div>
+          <div class="card">
+            <div style="font-size: 2rem;">🔬 Science: <span id="teachScience">98</span>%</div>
+            <small>65/66</small>
+          </div>
+          <div class="card">
+            <div style="font-size: 2rem;">📖 English: <span id="teachEnglish">94</span>%</div>
+            <small>55/58</small>
+          </div>
+        </div>
+        
+        <h3>🏆 Top Students</h3>
+        <div style="max-height: 400px; overflow-y: auto;">
+          <ul id="teacherLeaderboard"></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD PAGE -->
+    <div id="leaderboardPage" class="hidden">
+      <div class="panel" style="max-width: 800px; margin: 0 auto;">
+        <h2>🏆 Global Leaderboard</h2>
+        <p style="color: var(--muted); text-align: center; margin-bottom: 32px;">
+          Top performers across all subjects
+        </p>
+        <ul id="leaderboardList"></ul>
+        <div style="text-align: center; margin-top: 32px;">
+          <button class="primary-btn" onclick="showView('home')">🏠 Back to Home</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Game State
+    let xpLock = false;
+    let gameState = {
+      currentUser: { name: '', email: '', coins: 10, level: 1, xp: 0, streak: 0 },
+      game: { current: 0, score: 0, subject: '', questions: [], timer: null, timeLeft: 10 },
+      stats: {
+        accuracy: { overall: 0, math: 0, science: 0, english: 0 },
+        bestScores: { math: 0, science: 0, english: 0 },
+        history: []
+      },
+      settings: { sound: true, music: true },
+      leaderboard: []
+    };
+
+    // DOM Elements
+    const elements = {};
+    function getEl(id) { return elements[id] || (elements[id] = document.getElementById(id)); }
+
+    // View Management
+    const views = ['home', 'game', 'result', 'studentPage', 'teacherPage', 'leaderboardPage'];
+    function showView(viewId) {
+      views.forEach(v => getEl(v)?.classList.add('hidden'));
+      getEl(viewId)?.classList.remove('hidden');
+      getEl('topbar').style.display = viewId === 'home' ? 'none' : 'flex';
+      
+      // Update active view
+      if (viewId === 'home') updateHome();
+      if (viewId === 'leaderboardPage') renderLeaderboard();
+      if (viewId === 'teacherPage') loadTeacherData();
+      if (viewId === 'studentPage') loadStudentData();
+    }
+
+    // LOGIN SYSTEM - EMAIL + PASSWORD (first login creates an account)
+    const USERS_KEY = "edugame_users";
+const CURRENT_KEY = "edugame_current";
+
+getEl('loginForm').addEventListener('submit', (e) => {
+
+  e.preventDefault();
+
+  const email = getEl('loginEmail').value.trim().toLowerCase();
+  const password = getEl('loginPassword').value.trim();
+
+  let users = JSON.parse(localStorage.getItem(USERS_KEY) || "{}");
+
+  // user exists
+  if (users[email]) {
+
+    if (users[email].password !== password) {
+
+      getEl('loginMessage').textContent = "❌ Wrong password";
+      getEl('loginMessage').style.color = "#ef4444";
+      return;
+
+    }
+
+  } else {
+
+    // create new user
+    users[email] = {
+      password: password,
+      coins: 10,
+      level: 1,
+      xp: 0,
+      streak: 0
+    };
+
+    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
+  }
+
+  // login success
+
+  localStorage.setItem(CURRENT_KEY, email);
+
+  gameState.currentUser = {
+    name: email.split("@")[0],
+    email: email,
+    coins: users[email].coins,
+    level: users[email].level,
+    xp: users[email].xp,
+    streak: users[email].streak
+  };
+
+  getEl('loginOverlay').classList.add('hidden');
+  getEl('home').classList.remove('hidden');
+  getEl('topbar').style.display = 'flex';
+
+  updateAllUI();
+
+});
+
+    // Load saved user
+ window.addEventListener("load", () => {
+
+  const email = localStorage.getItem("edugame_current");
+
+  if (!email) return;
+
+  let users = JSON.parse(localStorage.getItem("edugame_users") || "{}");
+
+  if (!users[email]) return;
+
+  gameState.currentUser = {
+    name: email.split("@")[0],
+    email,
+    coins: users[email].coins,
+    level: users[email].level,
+    xp: users[email].xp,
+    streak: users[email].streak
+  };
+
+  getEl('loginOverlay').classList.add('hidden');
+  getEl('home').classList.remove('hidden');
+  getEl('topbar').style.display = 'flex';
+
+  updateAllUI();
+
+});
+
+    // Game Questions
+    const questions = {
+      math: [
+        { q: "A student’s problem-solving speed improves by 25%. If the original time to solve a task was 12 minutes, what is the new time?", a: ["6 minutes", "8 minutes", "9 minutes", "10 minutes"], c: 2, hint: "Reduce 12 minutes by a quarter." },
+        { q: "A student uses an educational game 2.5 hours per day for 4 days. How many total hours are spent?", a: ["8 hours", "9 hours", "10 hours", "12 hours"], c: 2, hint: "Multiply daily hours by 4." },
+        { q: "A student’s score increases from 68 to 85 after using math-based games. What is the percentage increase (nearest whole number)?", a: ["20%", "22%", "25%", "30%"], c: 2, hint: "Find the change over the original score." },
+        { q: "In a class of 50 students, 70% who use educational games improved their grades. How many students improved?", a: ["30", "32", "35", "40"], c: 2, hint: "Seventy percent of 50." },
+        { q: "A student’s reaction time decreases from 0.6 s to 0.45 s. What is the percentage decrease?", a: ["15%", "20%", "25%", "30%"], c: 2, hint: "Compare the drop to the original time." },
+        { q: "A student spends 6 hours gaming and 3 hours studying daily. What is the ratio of gaming to studying time in simplest form?", a: ["1:2", "2:1", "3:1", "2:3"], c: 1, hint: "Reduce 6:3." },
+        { q: "A student’s grade drops from 92 to 74. What is the percentage decrease (nearest whole number)?", a: ["15%", "18%", "20%", "22%"], c: 2, hint: "Find the drop divided by 92." },
+        { q: "A student sleeps 5.5 hours instead of the recommended 8 hours. What percentage of the recommended sleep are they getting?", a: ["60%", "65%", "68.75%", "72%"], c: 2, hint: "Divide 5.5 by 8." },
+        { q: "Out of 80 students, 52 say gaming negatively affects their study habits. What fraction represents these students (simplest form)?", a: ["13/20", "3/5", "4/5", "2/3"], c: 0, hint: "Simplify 52/80." },
+        { q: "A student fails to submit 6 out of 24 assignments. What percentage of assignments were missed?", a: ["20%", "25%", "30%", "35%"], c: 1, hint: "6 divided by 24." },
+        { q: "A study shows that as students increase gaming from 2 to 6 hours per day, their average grades drop from 90 to 72. What type of correlation is this?", a: ["Positive correlation", "Negative correlation", "No correlation", "Perfect correlation"], c: 1, hint: "More gaming, lower grades." },
+        { q: "For every additional hour of gaming, a student’s grade decreases by 3 points. If the grade is 95 when gaming 1 hour, what is the grade after 5 hours?", a: ["80", "83", "85", "88"], c: 1, hint: "Four extra hours at -3 points each." },
+        { q: "If gaming time increases by 2 hours and grades drop by 10 points, what is the rate of change per hour?", a: ["-2", "-3", "-5", "-10"], c: 2, hint: "Divide the 10-point drop by 2 hours." },
+        { q: "A graph of gaming time vs grades forms a straight line sloping downward. What does this imply?", a: ["Strong positive relationship", "Weak positive relationship", "Negative linear relationship", "No relationship"], c: 2, hint: "Downward slope meaning." },
+        { q: "If the line of best fit for data is downward sloping, what conclusion can be made?", a: ["Gaming improves grades", "No relationship exists", "More gaming is associated with lower grades", "Grades remain constant"], c: 2, hint: "Interpret a negative slope." }
+      ],
+      science: [
+        { q: "Which part of the brain is mainly responsible for problem-solving skills improved by gaming?", a: ["Cerebellum", "Brainstem", "Prefrontal Cortex", "Medulla"], c: 2, hint: "Front lobe decisions." },
+        { q: "Online gaming can improve hand-eye coordination. Which system is involved?", a: ["Digestive system", "Nervous system", "Respiratory system", "Endocrine system"], c: 1, hint: "Signals and reflexes." },
+        { q: "Strategy games enhance which cognitive skill useful in academics?", a: ["Memory recall", "Critical thinking", "Sleeping habits", "Appetite control"], c: 1, hint: "Evaluating options." },
+        { q: "Multiplayer games improve communication skills through:", a: ["Isolation", "Verbal and non-verbal interaction", "Sleep deprivation", "Physical inactivity"], c: 1, hint: "Talking and coordinating." },
+        { q: "Gaming rewards activate which brain chemical linked to motivation?", a: ["Insulin", "Dopamine", "Hemoglobin", "Melatonin"], c: 1, hint: "Reward neurotransmitter." },
+        { q: "Excessive gaming can lead to lack of sleep. Which hormone is affected?", a: ["Dopamine", "Melatonin", "Adrenaline", "Estrogen"], c: 1, hint: "Sleep hormone drops." },
+        { q: "Too much screen time can cause digital eye strain. Which organ is affected?", a: ["Skin", "Eyes", "Liver", "Kidneys"], c: 1, hint: "Vision issues." },
+        { q: "Gaming addiction can affect attention span. This impacts which academic skill?", a: ["Reading comprehension", "Physical strength", "Taste perception", "Hearing ability"], c: 0, hint: "Understanding texts." },
+        { q: "Sitting for long periods while gaming may lead to:", a: ["Improved posture", "Muscle stiffness", "Faster metabolism", "Better eyesight"], c: 1, hint: "Lack of movement effect." },
+        { q: "Excessive gaming may increase stress levels due to:", a: ["Overproduction of cortisol", "Lack of oxygen", "Increased digestion", "Low heart rate"], c: 0, hint: "Stress hormone spike." },
+        { q: "What happens to study time when gaming time increases too much?", a: ["It increases", "It decreases", "It stays the same", "It doubles"], c: 1, hint: "Tradeoff with study hours." },
+        { q: "Moderate gaming (in balance) may help improve:", a: ["Focus and relaxation", "Laziness", "Memory loss", "Stress only"], c: 0, hint: "Healthy balance benefit." },
+        { q: "Which scientific concept explains the relationship between gaming time and grades?", a: ["Photosynthesis", "Correlation", "Gravity", "Evolution"], c: 1, hint: "Shows how two variables move." },
+        { q: "Too much gaming can reduce study habits due to:", a: ["Better time management", "Distraction and poor scheduling", "Increased energy", "Improved sleep"], c: 1, hint: "Time lost to games." },
+        { q: "What is the best scientific recommendation for gaming and studying?", a: ["Play all day", "Never play games", "Balance time between gaming and studying", "Only study at night"], c: 2, hint: "Moderation approach." }
+      ],
+      english: [
+        { q: "Which sentence shows a positive effect of online gaming on students' academic performance?", a: ["Students lose focus in class", "Gaming improves problem-solving skills", "Students skip assignments", "Gaming causes stress"], c: 1, hint: "Look for the benefit." },
+        { q: "Which English skill is improved when students communicate in multiplayer games?", a: ["Writing only", "Speaking and listening", "Drawing", "Memorizing numbers"], c: 1, hint: "Think conversation." },
+        { q: "Strategy-based games help students improve which academic skill?", a: ["Sleeping habits", "Critical thinking", "Eating habits", "Physical strength"], c: 1, hint: "Analyzing choices." },
+        { q: "Which sentence is grammatically correct?", a: ["Gaming help students learn faster.", "Gaming helps students learn faster.", "Gaming helping students learn faster.", "Gaming helped students learns faster."], c: 1, hint: "Subject-verb agreement." },
+        { q: "Which word best describes a positive “impact”?", a: ["Harm", "Effect", "Problem", "Failure"], c: 1, hint: "Another word for result." },
+        { q: "Excessive gaming can reduce study time. Which English skill is most affected?", a: ["Reading comprehension", "Running", "Drawing", "Singing"], c: 0, hint: "Understanding texts." },
+        { q: "Which sentence shows a negative effect of gaming?", a: ["Students develop better focus", "Students improve communication", "Students become distracted from studies", "Students learn teamwork"], c: 2, hint: "Look for distraction." },
+        { q: "What is the antonym of “positive”?", a: ["Helpful", "Beneficial", "Negative", "Effective"], c: 2, hint: "Opposite meaning." },
+        { q: "Which sentence is correctly punctuated?", a: ["Gaming is fun however it can distract students.", "Gaming is fun; however, it can distract students.", "Gaming is fun however, it can distract students", "Gaming is fun however it can distract students"], c: 1, hint: "Use a semicolon before however." },
+        { q: "Gaming addiction can affect attention span. This leads to:", a: ["Better grades", "Improved focus", "Poor academic performance", "Faster reading"], c: 2, hint: "Outcome of lost focus." },
+        { q: "What happens when students spend too much time gaming?", a: ["Study time increases", "Study time decreases", "Grades always improve", "Nothing changes"], c: 1, hint: "Time tradeoff." },
+        { q: "What does the word “correlate” mean?", a: ["To compete", "To connect or relate", "To ignore", "To separate"], c: 1, hint: "Shows a relationship." },
+        { q: "Moderate gaming can help students:", a: ["Lose focus", "Improve relaxation and focus", "Forget lessons", "Avoid studying"], c: 1, hint: "Benefits of balance." },
+        { q: "Which sentence best shows time correlation?", a: ["Students enjoy games", "More gaming time leads to less study time", "Students like school", "Gaming is fun"], c: 1, hint: "Cause and effect on time." },
+        { q: "Which statement best explains the relationship between time spent on activities and student performance?", a: ["Spending too much time on one activity can affect performance in other areas", "Time has no effect on student performance", "More time always guarantees better results", "Students should only focus on one activity"], c: 0, hint: "Consider balance." }
+      ]
+    };
+
+    // Start Game
+    function startGame(subject) {
+      gameState.game.subject = subject;
+      gameState.game.questions = [...questions[subject]];
+      gameState.game.current = 0;
+      gameState.game.score = 0;
+      showView('game');
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const q = gameState.game.questions[gameState.game.current];
+      getEl('question').textContent = q.q;
+      getEl('counter').textContent = gameState.game.current + 1;
+      getEl('totalQuestions').textContent = gameState.game.questions.length;
+      getEl('subjectLabel').textContent = gameState.game.subject.toUpperCase();
+      
+      const answersDiv = getEl('answers');
+      answersDiv.innerHTML = '';
+      
+      q.a.forEach((answer, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = answer;
+        btn.onclick = () => checkAnswer(i);
+        answersDiv.appendChild(btn);
+      });
+      
+      getEl('hintText').textContent = `💰 Spend 2 coins for a hint: "${q.hint}"`;
+      startTimer();
+      updateProgress();
+    }
+
+    function checkAnswer(selected) {
+      clearInterval(gameState.game.timer);
+      const q = gameState.game.questions[gameState.game.current];
+      const buttons = getEl('answers').querySelectorAll('button');
+      
+      buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.c) btn.classList.add('correct');
+        else if (i === selected) btn.classList.add('wrong');
+      });
+      
+      if (selected === q.c) {
+        gameState.game.score++;
+        gainXP(10);
+        gameState.currentUser.streak++;
+      } else {
+        gameState.currentUser.streak = 0;
+      }
+      
+      setTimeout(nextQuestion, 1200);
+    }
+
+    function nextQuestion() {
+
+  if (gameState.game.timer) {
+    clearInterval(gameState.game.timer);
+    gameState.game.timer = null;
+  }
+
+  gameState.game.current++;
+
+  if (gameState.game.current >= gameState.game.questions.length) {
+    endGame();
+  } else {
+    loadQuestion();
+  }
+
+}
+    function startTimer() {
+
+  // ✅ stop old timer first
+  if (gameState.game.timer) {
+    clearInterval(gameState.game.timer);
+    gameState.game.timer = null;
+  }
+
+  gameState.game.timeLeft = 12;
+
+  getEl('timer').textContent = gameState.game.timeLeft;
+
+  gameState.game.timer = setInterval(() => {
+
+    gameState.game.timeLeft--;
+
+    getEl('timer').textContent = gameState.game.timeLeft;
+
+    if (gameState.game.timeLeft <= 0) {
+
+      clearInterval(gameState.game.timer);
+      gameState.game.timer = null;
+
+      nextQuestion();
+
+    }
+
+  }, 1000);
+
+}
+
+    function updateProgress() {
+      const progress = (gameState.game.current / gameState.game.questions.length);
+      getEl('progressFill').style.width = `${progress * 100}%`;
+    }
+
+    let gameEnded = false;
+
+function endGame() {
+
+  if (gameEnded) return;
+  gameEnded = true;
+  setTimeout(() => {
+  gameEnded = false;
+}, 500);
+      const accuracy = Math.round((gameState.game.score / gameState.game.questions.length) * 100);
+      const earnedCoins = gameState.game.score * 2;
+      const earnedXP = gameState.game.score * 10;
+      
+      gameState.currentUser.coins += earnedCoins;
+      gainXP(earnedXP);
+      
+      getEl('finalScore').textContent = `Score: ${gameState.game.score}/${gameState.game.questions.length}`;
+      getEl('finalStats').textContent = `${accuracy}% Accuracy`;
+      getEl('resultAccuracy').textContent = accuracy;
+      getEl('earnedCoins').textContent = earnedCoins;
+      getEl('earnedXP').textContent = earnedXP;
+      // Update stats
+      gameState.stats.history.unshift({
+        subject: gameState.game.subject,
+        score: gameState.game.score,
+        accuracy,
+        date: new Date().toLocaleDateString()
+      });
+      
+      showView('result');
+      saveProgress();
+      updateAllUI();
+    }
+
+    // Power-ups
+    function useHint() {
+      if (gameState.currentUser.coins < 2) {
+        alert('Need 2 coins for hint!');
+        return;
+      }
+      gameState.currentUser.coins -= 2;
+      const q = gameState.game.questions[gameState.game.current];
+      getEl('hintText').innerHTML = `💡 <strong>Hint:</strong> ${q.hint}`;
+      updateCoins();
+    }
+
+    function removeChoices() {
+      if (gameState.currentUser.coins < 3) return alert('Need 3 coins!');
+      gameState.currentUser.coins -= 3;
+      const buttons = getEl('answers').querySelectorAll('button');
+      const correctIdx = gameState.game.questions[gameState.game.current].c;
+      let removed = 0;
+      
+      buttons.forEach((btn, i) => {
+        if (i !== correctIdx && removed < 2 && Math.random() > 0.3) {
+          btn.disabled = true;
+          btn.style.opacity = '0.5';
+          btn.style.textDecoration = 'line-through';
+          removed++;
+        }
+      });
+      
+      updateCoins();
+    }
+
+    function skipQuestion() {
+      if (gameState.currentUser.coins < 5) return alert('Need 5 coins!');
+      gameState.currentUser.coins -= 5;
+      nextQuestion();
+      updateCoins();
+    }
+
+    // XP System
+    function gainXP(amount) {
+
+  if (xpLock) return; // ✅ prevents infinite XP loop
+  xpLock = true;
+
+  gameState.currentUser.xp += amount;
+
+  while (gameState.currentUser.xp >= 100) {
+    gameState.currentUser.xp -= 100;
+    gameState.currentUser.level++;
+    showLevelUp();
+  }
+
+  updateXP();
+
+  setTimeout(() => {
+    xpLock = false;
+  }, 200);
+
+}
+
+    function showLevelUp() {
+      const div = document.createElement('div');
+      div.className = 'level-up';
+      div.textContent = `LEVEL ${gameState.currentUser.level}! 🎉`;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 2000);
+    }
+
+    // Navigation
+    function restartGame() { startGame(gameState.game.subject); }
+    function goHome() { showView('home'); }
+   function logoutUser() {
+
+  localStorage.removeItem("edugame_current");
+
+  location.reload();
+
+}
+
+    // UI Updates
+    function updateAllUI() {
+      updateXP();
+      updateCoins();
+      updateProfile();
+      updateStats();
+      updateButtons();
+    }
+
+    function updateXP() {
+      getEl('level').textContent = gameState.currentUser.level;
+      getEl('xp').textContent = gameState.currentUser.xp;
+      getEl('xpFill').style.width = `${gameState.currentUser.xp}%`;
+      getEl('profileLevel').textContent = gameState.currentUser.level;
+      getEl('profileXP').textContent = gameState.currentUser.xp;
+    }
+
+    function updateCoins() {
+      getEl('coins').textContent = gameState.currentUser.coins;
+      getEl('totalCoins').textContent = gameState.currentUser.coins;
+      getEl('profileName').textContent = gameState.currentUser.name || 'Player';
+    }
+
+    function updateProfile() {
+      getEl('streakCount').textContent = gameState.currentUser.streak;
+      getEl('profileStreak').textContent = gameState.currentUser.streak;
+    }
+
+    function updateStats() {
+      const overall = Math.round(gameState.stats.history.reduce((acc, h) => acc + h.accuracy, 0) / Math.max(1, gameState.stats.history.length));
+      getEl('accuracy').textContent = overall;
+      
+      getEl('bestScore').textContent = Math.max(
+        gameState.stats.bestScores.math,
+        gameState.stats.bestScores.science,
+        gameState.stats.bestScores.english
+      );
+    }
+
+    function updateButtons() {
+      getEl('hintBtn').textContent = `💡 Hint (2🪙)`;
+      getEl('removeBtn').textContent = `❌ Remove 2 (3🪙)`;
+      getEl('skipBtn').textContent = `⏭ Skip (5🪙)`;
+    }
+
+    // Dashboard Data
+    function loadTeacherData() {
+      getEl('teachOverall').textContent = '95';
+      getEl('teachMath').textContent = '92';
+      getEl('teachScience').textContent = '98';
+      getEl('teachEnglish').textContent = '94';
+      
+      getEl('teacherLeaderboard').innerHTML = gameState.leaderboard
+        .slice(0, 10)
+        .map((p, i) => `<li class="leaderboard-entry">
+          <span class="rank">${i+1}.</span>
+          <span>${p.name}</span>
+          <span>${p.score} pts</span>
+        </li>`).join('');
+    }
+
+    function loadStudentData() {
+      getEl('studentOverall').textContent = '92';
+      getEl('studentMath').textContent = '88';
+      getEl('studentScience').textContent = '95';
+      getEl('studentEnglish').textContent = '90';
+      
+      getEl('recentPerformance').innerHTML = gameState.stats.history
+        .slice(0, 8)
+        .map(h => `<li class="leaderboard-entry">
+          <span>${h.subject}</span>
+          <span>${h.score}/${h.accuracy}%</span>
+          <span>${h.date}</span>
+        </li>`).join('');
+    }
+
+    function renderLeaderboard() {
+      if (!gameState.leaderboard.length) {
+        getEl('leaderboardList').innerHTML = '<li class=\"leaderboard-entry\"><span>No scores yet — be the first to play!</span></li>';
+        return;
+      }
+      getEl('leaderboardList').innerHTML = gameState.leaderboard
+        .map((p, i) => {
+          const isYou = p.name === gameState.currentUser.name;
+          return `<li class="leaderboard-entry ${isYou ? 'you' : ''}">
+            <div>
+              <span class="rank" style="font-size: 1.5rem; color: ${i < 3 ? '#facc15' : 'var(--text)'}">${i+1}.</span>
+              <strong>${p.name}</strong>
+            </div>
+            <div>
+              <span style="font-weight: 600;">${p.score} pts</span>
+              <small style="color: var(--muted);">${p.subject}</small>
+            </div>
+          </li>`;
+        }).join('');
+    }
+
+    // Menu Navigation
+    function showMenuSection(panelId) {
+      document.querySelectorAll('.menu-panel').forEach(p => p.classList.remove('active'));
+      getEl(panelId)?.classList.add('active');
+    }
+
+    // Settings
+    function toggleSound() {
+      gameState.settings.sound = !gameState.settings.sound;
+      getEl('soundBtn').textContent = gameState.settings.sound ? 'On' : 'Off';
+    }
+
+    function toggleMusic() {
+      gameState.settings.music = !gameState.settings.music;
+      getEl('musicBtn').textContent = gameState.settings.music ? 'On' : 'Off';
+    }
+
+    // Save/Load Progress
+    function saveProgress() {
+      localStorage.setItem('edugame_progress', JSON.stringify(gameState));
+    }
+
+    // Initialize
+    function updateHome() {
+      updateAllUI();
+      loadStudentData(); // Preload for dashboard
+    }
+
+    // Home page initialization
+    showView('home');
+    updateAllUI();
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (getEl('game').classList.contains('hidden')) return;
+      if (e.key >= '1' && e.key <= '4') {
+        const buttons = getEl('answers').querySelectorAll('button');
+        if (buttons[e.key - 1]) buttons[e.key - 1].click();
+      }
+    });
+  </script>
+</body>
+</html>
